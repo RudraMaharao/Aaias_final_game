@@ -89,6 +89,55 @@ Instead, the response emerges from the **relative utility of the available choic
 
 ---
 
+## 📐 Utility Model
+
+Zephyr's utilities are **computed from published research**, not typed in by hand. Each utility is the expected cost of being caught (Becker, 1968), chosen by maximum expected utility (Russell & Norvig):
+
+```text
+U(truth) = -100 × P(accused | truth)
+U(lie)   = -100 × P(accused | lie) - lying cost
+```
+
+`P(accused)` is built in odds form, `odds = p / (1 - p)`, starting from 1 mole among 5 suspects and multiplying by one factor per fact the detective holds:
+
+| Parameter | Value | Basis |
+| --- | --- | --- |
+| Prior odds of accusation | 0.25 | 1 mole among 5 suspects (P = 0.20) |
+| Incriminating fact (admitting Storage, or a clue pointing at Supply) | ×2 | Design weight; values 2–3 give the same decisions |
+| Demeanor leak of a lie | ×1.39 | Lies flagged 47% vs truths 39% (Bond & DePaulo, 2006) |
+| Clue contradicting the lie, skilled detective (security passed) | ×6.76 | Liars caught 85.7% with Strategic Use of Evidence (Hartwig et al., 2006) |
+| Clue contradicting the lie, unskilled detective (security failed) | ×1.38 | Liars caught 55.0% without it (Hartwig et al., 2006) |
+| Lying cost | 5 | Small, fixed cost for a committed liar (Fischbacher & Föllmi-Heusi, 2013; Abeler et al., 2019) |
+
+Both physical clues contradict the lie: the ventilation override needs Supply access ("never went near Storage" is false), and Machine #3 needs no employee to restock. The security result is read as the detective's skill, because skilled interviewers catch liars by confronting them with evidence.
+
+Resulting utilities (State = Storage found, Cafeteria found, Security failed):
+
+| State | Truth | Lie | Choice |
+| --- | --- | --- | --- |
+| FFF | −33 | −31 | Lie |
+| FFT | −33 | −31 | Lie |
+| FTF | −50 | −75 | Truth |
+| FTT | −50 | −37 | Lie |
+| TFF | −50 | −75 | Truth |
+| TFT | −50 | −37 | Lie |
+| TTF | −67 | −99 | Truth |
+| TTT | −67 | −45 | Lie |
+
+Rule that emerges: Zephyr lies when the detective has nothing to confront him with (no clue found, or failed the security check), and tells the truth when evidence plus a skilled detective would expose the lie. Setting `LIE_COST` to 7.5 or more makes him tell the truth in FFF and FFT as well. All parameters are at the top of `ai_agent.py`; `utility_table()` prints the table.
+
+**References**
+
+* Abeler, Nosenzo & Raymond (2019). Preferences for truth-telling. *Econometrica* 87(4).
+* Becker (1968). Crime and punishment: An economic approach. *Journal of Political Economy* 76(2).
+* Bond & DePaulo (2006). Accuracy of deception judgments. *Personality and Social Psychology Review* 10(3).
+* Fischbacher & Föllmi-Heusi (2013). Lies in disguise. *Journal of the European Economic Association* 11(3).
+* Graham (2013). An introduction to utility theory. *Game AI Pro*, ch. 9.
+* Hartwig, Granhag, Strömwall & Kronkvist (2006). Strategic use of evidence during police interviews. *Law and Human Behavior* 30(5).
+* Russell & Norvig. *Artificial Intelligence: A Modern Approach*, ch. 2.
+
+---
+
 ## 🔐 Restricted Terminal
 
 The Restricted Terminal code is reconstructed from three clues:
