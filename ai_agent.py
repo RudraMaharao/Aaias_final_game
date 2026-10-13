@@ -14,7 +14,7 @@ Decision 2: Utility Based
 """
 
 import random
-
+#this is the main library import
 
 # --- Utility model parameters ---------------------------------------------
 # Odds are p / (1 - p). Each factor multiplies the odds of being accused.
